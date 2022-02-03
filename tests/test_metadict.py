@@ -121,20 +121,6 @@ def test_pop_nested(config: Dict):
     assert cfg == config
 
 
-# def test_get_nested(config: Dict):
-#     cfg = MetaDict(config)
-#     cfg.enable_nested_access()
-#     assert cfg.get('tokenizer_1.special_tokens') == config['tokenizer_1'].get('special_tokens')
-#
-#
-# def test_pop_nested(config: Dict):
-#     cfg = MetaDict(config)
-#     cfg.enable_nested_access()
-#     assert cfg.pop('tokenizer_1.special_tokens') == config['tokenizer_1'].pop('special_tokens')
-#     assert cfg == config
-
-
-
 def test_keys(config: Dict):
     cfg = MetaDict(config)
     assert cfg.keys() == config.keys()
@@ -204,27 +190,6 @@ def test_nested_assignment_contextmanager(config: Dict):
     assert cfg.nested_assignment is False
 
 
-# def test_nested_access_default(config: Dict):
-#     cfg = MetaDict(config)
-#     cfg.enable_nested_assignment()
-#     cfg.x.y.z = 100
-#     cfg.disable_nested_assignment()
-#     assert cfg.nested_access is False
-#     with pytest.raises(KeyError) as _:
-#         _ = cfg['x.y.z']
-#
-#
-# def test_nested_access(config: Dict):
-#     cfg = MetaDict(config)
-#     cfg.enable_nested_assignment()
-#     cfg.x.y.z = 100
-#     cfg.enable_nested_access()
-#     assert cfg.get('x.y.z') == 100
-#     assert cfg.nested_access is True
-#     cfg.disable_nested_access()
-#     assert cfg.nested_access is False
-
-
 def test_json(config: Dict):
     cfg = MetaDict(config)
     cfg_json = json.loads(json.dumps(cfg))
@@ -237,6 +202,18 @@ def test_pickle(config: Dict):
     cfg_pickle = pickle.loads(pickle.dumps(cfg))
     assert cfg_pickle == cfg
     assert isinstance(cfg_pickle, MetaDict)
+
+
+def test_pickle_with_nested_assignment(config: Dict):
+    cfg = MetaDict(config)
+
+    with cfg.enabling_nested_assignment() as cfg:
+        cfg.x.y.z = 100
+        cfg_pickle = pickle.loads(pickle.dumps(cfg))
+        assert cfg_pickle == cfg
+        assert isinstance(cfg_pickle, MetaDict)
+        assert cfg_pickle.nested_assignment is True
+    assert cfg.nested_assignment is False
 
 
 def test_is_instance_dict(config: Dict):
@@ -274,9 +251,6 @@ def test_append_dict_to_list(config: Dict):
 
 @pytest.mark.parametrize("value", ['wrong_type', 999])
 def test_init_type_checks(value):
-    # with pytest.raises(TypeError) as _:
-    #     MetaDict(config, nested_access=value)
-
     with pytest.raises(TypeError) as _:
         MetaDict(config, nested_assignment=value)
 
@@ -286,23 +260,6 @@ def test_warning_protected_key():
         MetaDict(items=[1, 2, 3])
         assert str(warn_inf.list[0].message) == "'MetaDict' object uses 'items' internally. " \
                                                 "'items' can only be accessed via `obj['items']`."
-
-
-# def test_warning(capsys):
-#     _warning('Some Warning.')
-#     captured = capsys.readouterr()
-#     assert captured.out == 'UserWarning: Some Warning.\n'
-
-
-# def test_no_dot_in_key_if_nested_access():
-#     cfg = MetaDict({'some.dotted.key': 100})
-#     with pytest.raises(ValueError):
-#         cfg.enable_nested_access()
-#
-#     del cfg['some.dotted.key']
-#     cfg.enable_nested_access()
-#     with pytest.raises(ValueError):
-#         cfg['some.dotted.key'] = 100
 
 
 @pytest.mark.parametrize("name, expected", [('models', True), ('text_100', True), ('1name', False), ('&%?=99', False),
