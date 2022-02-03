@@ -1,3 +1,4 @@
+import contextlib
 import keyword
 import re
 import warnings
@@ -41,18 +42,24 @@ class MetaDict(MutableMapping[KT, VT], dict):
     Also, inheriting from `dict` enables json encoding/decoding without a custom encoder.
     """
 
-    def __init__(self, *args, nested_assignment: bool = False, nested_access: bool = False, **kwargs) -> None:
+    def __init__(
+            self,
+            *args,
+            nested_assignment: bool = False,
+            # nested_access: bool = False,
+            **kwargs
+    ) -> None:
 
-        # check that 'nested_assignment' and 'nested _access' are of type bool
+        # check that 'nested_assignment' and 'nested_access' are of type bool
         if not isinstance(nested_assignment, bool):
             raise TypeError(f"Keyword argument 'nested_assignment' must be an instance of type 'bool'")
-        if not isinstance(nested_access, bool):
-            raise TypeError(f"Keyword argument 'nested_access' must be an instance of type 'bool'")
+        # if not isinstance(nested_access, bool):
+        #     raise TypeError(f"Keyword argument 'nested_access' must be an instance of type 'bool'")
 
         # init internal attributes and data store
         self.__dict__['_data']: Dict[KT, VT] = {}
         self.__dict__['_nested_assignment'] = nested_assignment
-        self.__dict__['_nested_access'] = nested_assignment
+        # self.__dict__['_nested_access'] = nested_access
         self.__dict__['_parent'] = kwargs.pop('_parent', None)
         self.__dict__['_key'] = kwargs.pop('_key', None)
         self.__dict__['_memory_map']: Dict[KT, VT] = {}
@@ -70,9 +77,9 @@ class MetaDict(MutableMapping[KT, VT], dict):
         return iter(self._data)
 
     def __setitem__(self, key: KT, value: VT) -> None:
-        if self.nested_access and isinstance(key, str) and '.' in key:
-            raise ValueError(f"{self.__class__.__name__} does not accept dots in key names, "
-                             f"but the key '{key}' contains one.")
+        # if self.nested_access and isinstance(key, str) and '.' in key:
+        #     raise ValueError(f"{self.__class__.__name__} does not accept dots in key names, "
+        #                      f"but the key '{key}' contains one.")
 
         # show a warning if the assigned key or attribute is used internally (e.g `items`, `keys`, etc.)
         try:
@@ -94,10 +101,10 @@ class MetaDict(MutableMapping[KT, VT], dict):
             parent[key] = self._data
 
     def __getitem__(self, key: KT) -> VT:
-        if self.nested_access and isinstance(key, str) and '.' in key:
-            # Since keys cannot contain dots (see __setitem__), we use dots to do recursive calls.
-            key, rest = key.split('.', 1)
-            return self[key][rest]
+        # if self.nested_access and isinstance(key, str) and '.' in key:
+        #     # Since keys cannot contain dots (see __setitem__), we use dots to do recursive calls.
+        #     key, rest = key.split('.', 1)
+        #     return self[key][rest]
 
         try:
             value = self._data[key]
@@ -119,24 +126,22 @@ class MetaDict(MutableMapping[KT, VT], dict):
         return value
 
     def __missing__(self, key: KT) -> 'MetaDict':
-        return self.__class__(_parent=self, _key=key, nested_assignment=self._nested_assignment)
+        return self.__class__(_parent=self, _key=key, nested_assignment=self._nested_assignment)  # nested_access=self._nested_access
 
     def __delitem__(self, key: KT) -> None:
-        if self.nested_access and isinstance(key, str) and '.' in key:
-            # Since keys cannot contain dots (see __setitem__), we use dots to do recursive calls.
-            key, rest = key.split('.', 1)
-            del self[key][rest]
-            return
+        # if self.nested_access and isinstance(key, str) and '.' in key:
+        #     # Since keys cannot contain dots (see __setitem__), we use dots to do recursive calls.
+        #     key, rest = key.split('.', 1)
+        #     del self[key][rest]
+        #     return
 
         del self._data[key]
 
     def __setattr__(self, attr: str, val: VT) -> None:
         self[attr] = val
-        # self.__setitem__(attr, val)
 
     def __getattr__(self, key: KT) -> VT:
         try:
-            # return self.__getitem__(key)
             return self[key]
         except KeyError:
             raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'") from None
@@ -161,8 +166,8 @@ class MetaDict(MutableMapping[KT, VT], dict):
         _data = state.pop('_data')
         del state['_memory_map']
         _nested_assignment = state.pop('_nested_assignment')
-        _nested_access = state.pop('_nested_access')
-        return cls(_data, nested_assignment=_nested_assignment, nested_access=_nested_access, **state)
+        # _nested_access = state.pop('_nested_access')
+        return cls(_data, nested_assignment=_nested_assignment, **state)  # nested_access=_nested_access,
 
     def __reduce__(self) -> Tuple:
         """Return state information for pickling."""
@@ -230,7 +235,8 @@ class MetaDict(MutableMapping[KT, VT], dict):
         elif isinstance(obj, Mapping):
             value = self.__class__({k: self.from_object(v) for k, v in obj.items()},
                                    nested_assignment=self._nested_assignment,
-                                   nested_access=self._nested_access)
+                                   # nested_access=self._nested_access
+                                   )
         else:
             value = obj
 
@@ -254,34 +260,46 @@ class MetaDict(MutableMapping[KT, VT], dict):
     def disable_nested_assignment(self):
         self._set_nested_assignment(False)
 
+    @contextlib.contextmanager
+    def enabling_nested_assignment(self):
+        """Context manager which temporarily enables nested key/attribute assignment."""
+        nested_assignment = self.nested_assignment
+        if not nested_assignment:
+            self.enable_nested_assignment()
+        try:
+            yield self
+        finally:
+            if not nested_assignment:
+                self.disable_nested_assignment()
+
     @property
     def nested_assignment(self):
         return self.__dict__['_nested_assignment']
         # return self._nested_assignment
 
-    def _set_nested_access(self, val: bool):
-        if val is True and MetaDict._contains_dot_in_key(self._data):
-            raise ValueError(f"Nested attribute access cannot be enabled "
-                             f"since the object contains keys (possibly nested) with dots.")
-
-        self.__dict__['_nested_access'] = val
-        for key, value in self.items():
-            if isinstance(value, (list, tuple, set)):
-                for elem in value:
-                    if isinstance(elem, MetaDict):
-                        elem._set_nested_access(val)
-            elif isinstance(value, MetaDict):
-                value._set_nested_access(val)
-
-    def enable_nested_access(self):
-        self._set_nested_access(True)
-
-    def disable_nested_access(self):
-        self._set_nested_access(False)
-
-    @property
-    def nested_access(self):
-        return self.__dict__['_nested_access']
+    # def _set_nested_access(self, val: bool):
+    #     if val is True and MetaDict._contains_dot_in_key(self._data):
+    #         raise ValueError(f"Nested attribute access cannot be enabled "
+    #                          f"since the object contains keys (possibly nested) with dots.")
+    #
+    #     self.__dict__['_nested_access'] = val
+    #     for key, value in self.items():
+    #         if isinstance(value, (list, tuple, set)):
+    #             for elem in value:
+    #                 if isinstance(elem, MetaDict):
+    #                     elem._set_nested_access(val)
+    #         elif isinstance(value, MetaDict):
+    #             value._set_nested_access(val)
+    #
+    # def enable_nested_access(self):
+    #     self._set_nested_access(True)
+    #
+    # def disable_nested_access(self):
+    #     self._set_nested_access(False)
+    #
+    # @property
+    # def nested_access(self):
+    #     return self.__dict__['_nested_access']
 
     @staticmethod
     def _contains_mapping(iterable: Iterable, ignore: Optional[type] = None) -> bool:
@@ -294,16 +312,16 @@ class MetaDict(MutableMapping[KT, VT], dict):
                 return MetaDict._contains_mapping(x, ignore)
         return False
 
-    @staticmethod
-    def _contains_dot_in_key(obj: Mapping) -> bool:
-        """Recursively checks whether an object contains a mapping which has a key with a dot."""
-        if isinstance(obj, Mapping):
-            for key, value in obj.items():
-                if isinstance(key, str) and '.' in key:
-                    return True
-                else:
-                    return MetaDict._contains_dot_in_key(value)
-        elif isinstance(obj, (list, set, tuple)):
-            for elem in obj:
-                return MetaDict._contains_dot_in_key(elem)
-        return False
+    # @staticmethod
+    # def _contains_dot_in_key(obj: Mapping) -> bool:
+    #     """Recursively checks whether an object contains a mapping which has a key with a dot."""
+    #     if isinstance(obj, Mapping):
+    #         for key, value in obj.items():
+    #             if isinstance(key, str) and '.' in key:
+    #                 return True
+    #             else:
+    #                 return MetaDict._contains_dot_in_key(value)
+    #     elif isinstance(obj, (list, set, tuple)):
+    #         for elem in obj:
+    #             return MetaDict._contains_dot_in_key(elem)
+    #     return False
