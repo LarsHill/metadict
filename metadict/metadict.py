@@ -84,7 +84,7 @@ class MetaDict(MutableMapping[KT, VT], dict):
                           f"'{key}' can only be accessed via `obj['{key}']`.")
 
         # set key recursively
-        self._data[key] = self.from_object(value)
+        self._data[key] = self._from_object(value)
 
         # update parent when nested keys or attributes are assigned
         parent = self.__dict__.pop('_parent', None)
@@ -170,10 +170,10 @@ class MetaDict(MutableMapping[KT, VT], dict):
         return cls({key: value for key in iterable})
 
     def to_dict(self) -> Dict:
-        return MetaDict.to_object(self._data)
+        return MetaDict._to_object(self._data)
 
     @staticmethod
-    def to_object(obj: Any, _memory_map: Optional[Dict] = None) -> Any:
+    def _to_object(obj: Any, _memory_map: Optional[Dict] = None) -> Any:
         if _memory_map is None:
             _memory_map = {}
 
@@ -183,13 +183,13 @@ class MetaDict(MutableMapping[KT, VT], dict):
         if isinstance(obj, (list, tuple, set)):
             if MetaDict._contains_mapping(obj):
                 value = type(obj)(
-                    MetaDict.to_object(x, _memory_map) if id(x) not in _memory_map else _memory_map[id(x)]
+                    MetaDict._to_object(x, _memory_map) if id(x) not in _memory_map else _memory_map[id(x)]
                     for x in obj
                 )
             else:
                 value = obj
         elif isinstance(obj, Mapping):
-            value = {k: MetaDict.to_object(v, _memory_map) for k, v in obj.items()}
+            value = {k: MetaDict._to_object(v, _memory_map) for k, v in obj.items()}
         else:
             value = obj
 
@@ -197,21 +197,21 @@ class MetaDict(MutableMapping[KT, VT], dict):
 
         return value
 
-    def from_object(self, obj: Any) -> Any:
+    def _from_object(self, obj: Any) -> Any:
 
         if id(obj) in self._memory_map:
             return self._memory_map[id(obj)]
 
         if isinstance(obj, (list, tuple, set)):
             if MetaDict._contains_mapping(obj):
-                value = type(obj)(self.from_object(x) if id(x) not in self._memory_map else self._memory_map[id(x)]
+                value = type(obj)(self._from_object(x) if id(x) not in self._memory_map else self._memory_map[id(x)]
                                   for x in obj)
             else:
                 value = obj
         elif isinstance(obj, MetaDict):
             value = obj
         elif isinstance(obj, Mapping):
-            value = self.__class__({k: self.from_object(v) for k, v in obj.items()},
+            value = self.__class__({k: self._from_object(v) for k, v in obj.items()},
                                    nested_assignment=self._nested_assignment)
         else:
             value = obj

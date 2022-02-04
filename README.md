@@ -3,12 +3,13 @@
 
 _Going beyond dictionaries!_
 
----
+<hr style="border:1px"> </hr>
 
 <p align="center">
+<a href="#installation">Installation</a> •
   <a href="#key-features">Key Features</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#examples">Examples</a> •
+<a href="#documentation">Documentation</a> •
+  <a href="#competitors">Competitors</a> •
   <a href="#citation">Citation</a>
 </p>
 
@@ -18,29 +19,120 @@ _Going beyond dictionaries!_
 
 </div>
 
----
+<hr style="border:1px"> </hr>
 
-**MetaDict** 
+**MetaDict** is designed to behave exactly like a `dict` while enabling (nested) attribute-style key access and assignment with IDE autocompletion support. 
 
-## Key Features
-
-- **Attribute-style Key Access** - ...
+Many libraries claim to do the same, but fail in different ways (see <a href="#competitors">Competitors</a>). 
 
 ## Installation
 
-### 1. From Pip
-Simply execute:  
 ```bash
 $ pip install metadict
 ```
+## Key Features
 
-### 2. From Source
-1. Clone the repository,
-2. Navigate into the cloned directory (contains the setup.py file),
-3. Execute `$ pip install .`
+- Attribute-style key access and assignment with IDE autocompletion support
+   ```python
+   from metadict import MetaDict
+   
+   cfg = MetaDict()
+   cfg.optimizer = 'Adam'
+   print(cfg.optimizer)
+   >> Adam
+   ```
+   ![autocompletion demo](/autocompletion.png?raw=true "Autocompletion demo")
+- Nested key assignment similar to `defaultdict` from `collections`
+   ```python
+   cfg = MetaDict(nested_assignment=True)
+   cfg.model.type = 'Transformer' 
+   print(cfg.model.type)
+   >> Transformer
+   
+   # or restrict nested assignment via context manager
+   cfg = MetaDict()
+   with cfg.enabling_nested_assignment() as cfg:
+       cfg.model.type = 'Transformer'
+   cfg.new_model.type = 'MLP'
+   >> AttributeError: 'MetaDict' object has no attribute 'new_model'
+   ```
+- Is a `dict`
+   ```python
+   dict_config = {'model': 'Transformer',
+                  'optimizer': 'Adam'}    
+   cfg = MetaDict(dict_config)
+   print(isinstance(cfg, dict))
+   >> True
+   print(cfg == dict_config)
+   >> True
+   ```
+- Inbuilt `json` support
+   ```python
+   import json
+       
+   cfg = MetaDict({'model': 'Transformer'})
+   print(json.loads(json.dumps(cfg)))
+   >> {'model': 'Transformer'}
+   ```
+- Recursive conversion to `dict`
+   ```python  
+   cfg = MetaDict({'models': [{'name': 'Transformer'}, {'name': 'MLP'}]})
+   print(cfg.models[0].name)
+   >> Transformer
+   
+   cfg_dict = cfg.to_dict()
+   print(type(cfg_dict['models'][0]['name']))
+   >> dict
+   ```
+- No namespace conflicts with inbuilt methods like `items()`, `update()`, etc.
+   ```python  
+   cfg = MetaDict()
+   # Key 'items' is assigned as in a normal dict, but a UserWarning is raised
+   cfg.items = [1, 2, 3]
+   >> UserWarning: 'MetaDict' object uses 'items' internally. 'items' can only be accessed via `obj['items']`.
+   print(cfg)
+   >> {'items': [1, 2, 3]}
+   print(cfg['items'])
+   >> [1, 2, 3]
+   
+   # But the items method is not overwritten!
+   print(cfg.items)
+   >> <bound method Mapping.items of {'items': [1, 2, 3]}>
+   print(list(cfg.items()))
+   >> [('items', [1, 2, 3])]
+   ```
+- References are preserved
+   ```python
+   params = [1, 2, 3]    
+   cfg = MetaDict({'params': params})
+   print(cfg.params is params)
+   >> True
+   
+   model_dict = {'params': params}
+   cfg = MetaDict(model_1=model_dict, model_2=model_dict)
+   print(cfg.model_1 is cfg.model_2)
+   >> True
+   print(cfg.model_1.params is params)
+   >> True
+   
+   # Note: dicts are recursively converted to MetaDicts, thus...
+   print(cfg.model_1 is model_dict)
+   >> False
+   print(cfg.model_1 == model_dict)
+   >> True
+   ```
 
-## Examples
+## Documentation
 
+Check the [Test Cases](https://github.com/LarsHill/metadict/blob/main/tests/test_metadict.py) for a complete overview of all **MetaDict** features.
+
+
+## Competitors
+- [Addict](https://github.com/mewwts/addict)
+- [Prodict](https://github.com/ramazanpolat/prodict)
+- [AttrDict](https://github.com/bcj/AttrDict)
+- [Munch](https://github.com/Infinidat/munch)
+- [EasyDict](https://github.com/makinacorpus/easydict)
 
 
 ## Citation

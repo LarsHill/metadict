@@ -6,7 +6,7 @@ import pickle
 import pytest
 
 from metadict import MetaDict
-from metadict.metadict import complies_variable_syntax  # , _warning
+from metadict.metadict import complies_variable_syntax
 
 
 @pytest.fixture
@@ -224,14 +224,6 @@ def test_is_instance_dict(config: Dict):
 def test_to_dict(config: Dict):
     cfg = MetaDict(config)
     cfg_dict = cfg.to_dict()
-    assert cfg_dict == config
-    assert type(cfg_dict) == dict
-    assert type(cfg_dict['model'][0]) == dict
-
-
-def test_to_object(config: Dict):
-    cfg = MetaDict(config)
-    cfg_dict = MetaDict.to_object(cfg)
     assert cfg_dict == config
     assert type(cfg_dict) == dict
     assert type(cfg_dict['model'][0]) == dict
