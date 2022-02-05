@@ -175,6 +175,7 @@ class MetaDict(MutableMapping[KT, VT], dict):
 
     @staticmethod
     def _to_object(obj: Any, _memory_map: Optional[Dict] = None) -> Any:
+        """Recursively converts all nested MetaDicts to dicts preserving references."""
         if _memory_map is None:
             _memory_map = {}
 
@@ -199,6 +200,7 @@ class MetaDict(MutableMapping[KT, VT], dict):
         return value
 
     def _from_object(self, obj: Any) -> Any:
+        """Recursively converts all nested dicts to MetaDicts preserving references."""
 
         if id(obj) in self._memory_map:
             return self._memory_map[id(obj)]
