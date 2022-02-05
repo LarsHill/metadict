@@ -12,8 +12,8 @@ _Enabling dot notation and IDE autocompletion_
 </p>
 
 [![Python Version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![PyPI version](https://badge.fury.io/py/metadict.svg)](https://badge.fury.io/py/metadict)
-[![CircleCI](https://circleci.com/gh/fluidml/fluidml/tree/main.svg?style=shield)](https://circleci.com/gh/LarsHill/metadict/tree/main)
+[![PyPI version](https://badge.fury.io/py/metadict.svg?dummy=unused)](https://badge.fury.io/py/metadict)
+[![CircleCI](https://circleci.com/gh/LarsHill/metadict/tree/main.svg?style=shield)](https://circleci.com/gh/LarsHill/metadict/tree/main)
 [![codecov](https://codecov.io/gh/LarsHill/metadict/branch/main/graph/badge.svg?token=XG4UDWF8RE)](https://codecov.io/gh/LarsHill/metadict)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
