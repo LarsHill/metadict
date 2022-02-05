@@ -152,7 +152,7 @@ Check the [Test Cases](https://github.com/LarsHill/metadict/blob/main/tests/test
 
 ```
 @article{metadict,
-  title = {MetaDict - Going beyond dictionaries},
+  title = {MetaDict - Enabling dot notation and IDE autocompletion},
   author = {Hillebrand, Lars},
   year = {2022},
   publisher = {GitHub},
