@@ -1,27 +1,27 @@
 <div align="center">
 <h1>MetaDict</h1>
 
-_Going beyond dictionaries!_
-
-<hr style="border:1px"> </hr>
+_Enabling dot notation and IDE autocompletion_
 
 <p align="center">
 <a href="#installation">Installation</a> •
-  <a href="#key-features">Key Features</a> •
+  <a href="#features">Features</a> •
 <a href="#documentation">Documentation</a> •
   <a href="#competitors">Competitors</a> •
   <a href="#citation">Citation</a>
 </p>
 
-[![Python 3.6](https://img.shields.io/badge/python-3.6+-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python Version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![PyPI version](https://badge.fury.io/py/metadict.svg)](https://badge.fury.io/py/metadict)
 [![CircleCI](https://circleci.com/gh/fluidml/fluidml/tree/main.svg?style=shield)](https://circleci.com/gh/LarsHill/metadict/tree/main)
+[![codecov](https://codecov.io/gh/LarsHill/metadict/branch/main/graph/badge.svg?token=XG4UDWF8RE)](https://codecov.io/gh/LarsHill/metadict)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 </div>
 
-<hr style="border:1px"> </hr>
+---
 
-**MetaDict** is designed to behave exactly like a `dict` while enabling (nested) attribute-style key access and assignment with IDE autocompletion support. 
+**MetaDict** is designed to behave exactly like a `dict` while enabling (nested) attribute-style key access/assignment with IDE autocompletion support. 
 
 Many libraries claim to do the same, but fail in different ways (see <a href="#competitors">Competitors</a>). 
 
@@ -30,9 +30,9 @@ Many libraries claim to do the same, but fail in different ways (see <a href="#c
 ```bash
 $ pip install metadict
 ```
-## Key Features
+## Features
 
-- Attribute-style key access and assignment with IDE autocompletion support
+- Attribute-style key access and assignment (dot notation) with IDE autocompletion support
    ```python
    from metadict import MetaDict
    
@@ -129,10 +129,23 @@ Check the [Test Cases](https://github.com/LarsHill/metadict/blob/main/tests/test
 
 ## Competitors
 - [Addict](https://github.com/mewwts/addict)
+  - No key autocompletion in IDE
+  - Nested key assignment cannot be turned off
+  - Newly assigned `dict` objects are not converted to support attribute-style key access
+  - Shadows inbuilt type `Dict`
 - [Prodict](https://github.com/ramazanpolat/prodict)
+  - No key autocompletion in IDE without defining a static schema (similar to `dataclass`)
+  - No recursive conversion of `dict` objects when embedded in `list` or other inbuilt iterables
 - [AttrDict](https://github.com/bcj/AttrDict)
+  - No key autocompletion in IDE
+  - Converts `list` objects to `tuple` behind the scenes
 - [Munch](https://github.com/Infinidat/munch)
+  - Inbuilt methods like `items()`, `update()`, etc. can be overwritten with `obj.items = [1, 2, 30]` 
+  - No recursive conversion of `dict` objects when embedded in `list` or other inbuilt iterables
 - [EasyDict](https://github.com/makinacorpus/easydict)
+  - Only strings are valid keys, but `dict` accepts all hashable objects as keys
+  - Inbuilt methods like `items()`, `update()`, etc. can be overwritten with `obj.items = [1, 2, 30]`
+  - Inbuilt methods don't behave as expected: `obj.pop('unknown_key', None)` raises an `AttributeError`
 
 
 ## Citation

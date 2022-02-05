@@ -16,6 +16,7 @@ warnings.showwarning = _warning
 KT = TypeVar('KT')
 VT = TypeVar('VT')
 
+# regex to enforce python variable/attribute syntax
 ALLOWED_VAR_SYNTAX = re.compile(r'[a-zA-Z_]\w*')
 
 
