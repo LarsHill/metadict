@@ -140,11 +140,11 @@ Check the [Test Cases](https://github.com/LarsHill/metadict/blob/main/tests/test
   - No key autocompletion in IDE
   - Converts `list` objects to `tuple` behind the scenes
 - [Munch](https://github.com/Infinidat/munch)
-  - Inbuilt methods like `items()`, `update()`, etc. can be overwritten with `obj.items = [1, 2, 30]` 
+  - Inbuilt methods like `items()`, `update()`, etc. can be overwritten with `obj.items = [1, 2, 3]` 
   - No recursive conversion of `dict` objects when embedded in `list` or other inbuilt iterables
 - [EasyDict](https://github.com/makinacorpus/easydict)
   - Only strings are valid keys, but `dict` accepts all hashable objects as keys
-  - Inbuilt methods like `items()`, `update()`, etc. can be overwritten with `obj.items = [1, 2, 30]`
+  - Inbuilt methods like `items()`, `update()`, etc. can be overwritten with `obj.items = [1, 2, 3]`
   - Inbuilt methods don't behave as expected: `obj.pop('unknown_key', None)` raises an `AttributeError`
 
 
