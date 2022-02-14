@@ -143,6 +143,11 @@ def test_update(config: Dict):
     assert cfg == config
 
 
+def test_contains(config: Dict):
+    cfg = MetaDict(config)
+    assert 'model' in cfg
+
+
 def test_copy(config: Dict):
     cfg = MetaDict(config)
     assert copy.copy(cfg) is not cfg

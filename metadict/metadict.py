@@ -2,6 +2,7 @@ import contextlib
 import keyword
 import re
 import warnings
+from collections.abc import KeysView
 from typing import MutableMapping, Dict, Iterator, TypeVar, Iterable, Optional, Mapping, Any, Tuple
 
 
@@ -265,3 +266,17 @@ class MetaDict(MutableMapping[KT, VT], dict):
             elif isinstance(x, (list, set, tuple)):
                 return MetaDict._contains_mapping(x, ignore)
         return False
+
+    # add the following inherited methods from collections.abc.Mapping directly to make pycharm happy
+    # (removing an annoying warning for dict unpacking)
+    def __contains__(self, key):
+        try:
+            self[key]
+        except KeyError:
+            return False
+        else:
+            return True
+
+    def keys(self):
+        """D.keys() -> a set-like object providing a view on D's keys"""
+        return KeysView(self)
