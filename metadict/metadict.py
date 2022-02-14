@@ -56,11 +56,6 @@ class MetaDict(MutableMapping[KT, VT], dict):
             raise TypeError(f"Keyword argument 'nested_assignment' must be an instance of type 'bool'")
 
         # init internal attributes and data store
-        # dict.__setattr__(self, '_data', {})
-        # dict.__setattr__(self, '_nested_assignment', nested_assignment)
-        # dict.__setattr__(self, '_parent', kwargs.pop('_parent', None))
-        # dict.__setattr__(self, '_key', kwargs.pop('_key', None))
-        # dict.__setattr__(self, '_memory_map', {})
         self.__dict__['_data']: Dict[KT, VT] = {}
         self.__dict__['_nested_assignment'] = nested_assignment
         self.__dict__['_parent'] = kwargs.pop('_parent', None)
