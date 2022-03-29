@@ -60,7 +60,6 @@ class MetaDict(MutableMapping[KT, VT], dict):
         self.__dict__['_nested_assignment'] = nested_assignment
         self.__dict__['_parent'] = kwargs.pop('_parent', None)
         self.__dict__['_key'] = kwargs.pop('_key', None)
-        self.__dict__['_memory_map']: Dict[KT, VT] = {}
 
         # update state of data store
         self.update(*args, **kwargs)
@@ -145,7 +144,6 @@ class MetaDict(MutableMapping[KT, VT], dict):
     def repack_args(cls: type, state: Dict) -> 'MetaDict':
         """Repack and rename keyword arguments stored in state before feeding to class constructor"""
         _data = state.pop('_data')
-        del state['_memory_map']
         _nested_assignment = state.pop('_nested_assignment')
         return cls(_data, nested_assignment=_nested_assignment, **state)
 
@@ -175,41 +173,30 @@ class MetaDict(MutableMapping[KT, VT], dict):
         return MetaDict._to_object(self._data)
 
     @staticmethod
-    def _to_object(obj: Any, _memory_map: Optional[Dict] = None) -> Any:
-        """Recursively converts all nested MetaDicts to dicts preserving references."""
-        if _memory_map is None:
-            _memory_map = {}
-
-        if id(obj) in _memory_map:
-            return _memory_map[id(obj)]
+    def _to_object(obj: Any) -> Any:
+        """Recursively converts all nested MetaDicts to dicts."""
 
         if isinstance(obj, (list, tuple, set)):
             if MetaDict._contains_mapping(obj):
                 value = type(obj)(
-                    MetaDict._to_object(x, _memory_map) if id(x) not in _memory_map else _memory_map[id(x)]
+                    MetaDict._to_object(x)
                     for x in obj
                 )
             else:
                 value = obj
         elif isinstance(obj, Mapping):
-            value = {k: MetaDict._to_object(v, _memory_map) for k, v in obj.items()}
+            value = {k: MetaDict._to_object(v) for k, v in obj.items()}
         else:
             value = obj
-
-        _memory_map[id(obj)] = value
 
         return value
 
     def _from_object(self, obj: Any) -> Any:
-        """Recursively converts all nested dicts to MetaDicts preserving references."""
-
-        if id(obj) in self._memory_map:
-            return self._memory_map[id(obj)]
+        """Recursively converts all nested dicts to MetaDicts."""
 
         if isinstance(obj, (list, tuple, set)):
             if MetaDict._contains_mapping(obj):
-                value = type(obj)(self._from_object(x) if id(x) not in self._memory_map else self._memory_map[id(x)]
-                                  for x in obj)
+                value = type(obj)(self._from_object(x) for x in obj)
             else:
                 value = obj
         elif isinstance(obj, MetaDict):
@@ -219,8 +206,6 @@ class MetaDict(MutableMapping[KT, VT], dict):
                                    nested_assignment=self._nested_assignment)
         else:
             value = obj
-
-        self._memory_map[id(obj)] = value
 
         return value
 
