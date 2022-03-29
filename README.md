@@ -117,7 +117,7 @@ $ pip install metadict
    print(cfg.model is model_dict)
    >> False
    print(cfg.model == model_dict)
-   >> True~~~~
+   >> True
    ```
 
 ## Documentation
