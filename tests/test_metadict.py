@@ -11,7 +11,7 @@ from metadict.metadict import complies_variable_syntax
 
 @pytest.fixture
 def config() -> Dict:
-    dropout = 0.1
+    dropout = [[0.1, 0.2]]
     special_tokens = [['<NUM>', '<YEAR>']]
     tokenizer_params = {'special_tokens': special_tokens}
     return {'epochs': 10,
@@ -117,7 +117,7 @@ def test_get_nested(config: Dict):
 
 def test_pop_nested(config: Dict):
     cfg = MetaDict(config)
-    assert cfg.tokenizer_1.pop('special_tokens') == config['tokenizer_1'].pop('special_tokens')
+    assert cfg.optimizer.pop('lr') == config['optimizer'].pop('lr')
     assert cfg == config
 
 
@@ -236,7 +236,6 @@ def test_to_dict(config: Dict):
 
 def test_references(config: Dict):
     cfg = MetaDict(config)
-    assert cfg.tokenizer_1 is cfg.tokenizer_2
     assert cfg.tokenizer_1.special_tokens is config['tokenizer_1']['special_tokens']
 
 

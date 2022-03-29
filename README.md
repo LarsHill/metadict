@@ -109,17 +109,15 @@ $ pip install metadict
    >> True
    
    model_dict = {'params': params}
-   cfg = MetaDict(model_1=model_dict, model_2=model_dict)
-   print(cfg.model_1 is cfg.model_2)
-   >> True
-   print(cfg.model_1.params is params)
+   cfg = MetaDict(model=model_dict)
+   print(cfg.model.params is params)
    >> True
    
    # Note: dicts are recursively converted to MetaDicts, thus...
-   print(cfg.model_1 is model_dict)
+   print(cfg.model is model_dict)
    >> False
-   print(cfg.model_1 == model_dict)
-   >> True
+   print(cfg.model == model_dict)
+   >> True~~~~
    ```
 
 ## Documentation
