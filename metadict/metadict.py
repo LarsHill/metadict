@@ -101,16 +101,6 @@ class MetaDict(MutableMapping[KT, VT], dict):
                 return self.__missing__(key)
             raise
 
-        # if retrieved value is of builtin sequence type we check whether it contains an object of type Mapping
-        # (except MetaDict type objects).
-        # if True we call __setitem__ on the retrieved key-value pair to make sure
-        # all nested dicts are recursively converted to MetaDict objects.
-        # this is necessary if e.g. a list type attribute/key is appended by a normal dict object.
-        # oo dynamically convert the appended dict, we call __setitem__ again before the actual object retrieval.
-        if isinstance(value, (list, set, tuple)) and MetaDict._contains_mapping(value, ignore=self.__class__):
-            self[key] = value
-            value = self._data[key]
-
         return value
 
     def __missing__(self, key: KT) -> 'MetaDict':

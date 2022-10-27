@@ -242,6 +242,9 @@ def test_references(config: Dict):
 def test_append_dict_to_list(config: Dict):
     cfg = MetaDict(config)
     cfg.model.append({'type_': 'gru'})
+    assert type(cfg.model[-1]) == dict
+
+    cfg.model.append(MetaDict({'type_': 'gru'}))
     assert isinstance(cfg.model[-1], MetaDict)
 
 

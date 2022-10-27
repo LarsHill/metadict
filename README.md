@@ -81,8 +81,19 @@ $ pip install metadict
    >> Transformer
    
    cfg_dict = cfg.to_dict()
-   print(type(cfg_dict['models'][0]['name']))
-   >> dict
+   print(type(cfg_dict['models'][0]))
+   >> <class 'dict'>
+  
+   # Note: Appending a `dict` to a list within a `MetaDict` does not convert the `dict`.
+   # MetaDict does not overwrite `list` so intercepting `append`. `extend`, etc. is currently not possible.
+   # Simply wrap the appended or extended `dict` as a `MetaDict`.
+   cfg.models.append({'name': 'RNN'})
+   print(isinstance(cfg.models[-1], MetaDict))
+   >> False
+   
+   cfg.models.append(MetaDict({'name': 'RNN'}))
+   print(isinstance(cfg.models[-1], MetaDict))
+   >> True
    ```
 - No namespace conflicts with inbuilt methods like `items()`, `update()`, etc.
    ```python  
