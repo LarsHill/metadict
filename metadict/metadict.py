@@ -1,4 +1,5 @@
 import contextlib
+import copy
 import keyword
 import re
 import warnings
@@ -152,7 +153,7 @@ class MetaDict(MutableMapping[KT, VT], dict):
     def __copy__(self) -> 'MetaDict':
         cls = self.__class__
         result = cls.__new__(cls)
-        result.__dict__.update(self.__dict__)
+        result.__dict__.update({k: copy.copy(v) for k, v in self.__dict__.items()})
         return result
 
     @classmethod
