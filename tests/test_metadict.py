@@ -148,10 +148,22 @@ def test_contains(config: Dict):
     assert 'model' in cfg
 
 
-def test_copy(config: Dict):
-    cfg = MetaDict(config)
-    assert copy.copy(cfg) is not cfg
-    assert cfg.copy() == copy.copy(cfg)
+def test_copy():
+    cfg = MetaDict(a=1)
+    cfg2 = cfg.copy()
+    cfg2.a = 2
+    assert cfg.a == 1
+    assert cfg2.a == 2
+
+
+def test_copy_recursive():
+    cfg = MetaDict()
+    cfg2 = MetaDict(a=cfg)
+    cfg.a = cfg2
+    cfg3 = cfg.copy()
+    assert cfg3.a == cfg2
+    assert cfg3.a.a == cfg
+    assert cfg3.a.a.a == cfg2
 
 
 def test_str(config: Dict):
@@ -265,21 +277,3 @@ def test_warning_protected_key():
                                             ('100', False), (100, False), ((1, 2, 3), False)])
 def test_complies_variable_syntax(name: Any, expected: bool):
     assert complies_variable_syntax(name) == expected
-
-
-def test_copy():
-    cfg = MetaDict(a=1)
-    cfg2 = cfg.copy()
-    cfg2.a = 2
-    assert cfg.a == 1
-    assert cfg2.a == 2
-
-
-def test_copy_recursive():
-    cfg = MetaDict()
-    cfg2 = MetaDict(a=cfg)
-    cfg.a = cfg2
-    cfg3 = cfg.copy()
-    assert cfg3.a == cfg2
-    assert cfg3.a.a == cfg
-    assert cfg3.a.a.a == cfg2
