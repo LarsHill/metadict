@@ -1,5 +1,6 @@
 import json
 import pickle
+from collections import namedtuple
 from typing import Dict, List, Tuple, Any
 
 import pytest
@@ -276,3 +277,14 @@ def test_warning_protected_key():
                                             ('100', False), (100, False), ((1, 2, 3), False)])
 def test_complies_variable_syntax(name: Any, expected: bool):
     assert complies_variable_syntax(name) == expected
+
+
+def test_namedtuple():
+    named_tuple = namedtuple('NT', ['a', 'b'])
+
+    d1 = MetaDict(k=named_tuple(1, 2))
+    d2 = MetaDict(k=named_tuple(1, {2: 3}))
+    d3 = MetaDict(k=(1, [2, 3]))
+    assert d1.k.a == 1
+    assert d2.k.b == {2: 3}
+    assert d3 == {'k': (1, [2, 3])}
