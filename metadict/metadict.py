@@ -169,10 +169,15 @@ class MetaDict(MutableMapping[KT, VT], dict):
 
         if isinstance(obj, (list, tuple, set)):
             if MetaDict._contains_mapping(obj):
-                value = type(obj)(
-                    MetaDict._to_object(x)
-                    for x in obj
-                )
+                # Recursively process each item in the iterable
+                processed_items = (MetaDict._to_object(x) for x in obj)
+
+                # namedtuple and other tuple subclasses need their arguments unpacked,
+                # whereas list and set constructors take a single iterable.
+                if isinstance(obj, tuple):
+                    value = type(obj)(*processed_items)
+                else:
+                    value = type(obj)(processed_items)
             else:
                 value = obj
         elif isinstance(obj, Mapping):
@@ -187,7 +192,15 @@ class MetaDict(MutableMapping[KT, VT], dict):
 
         if isinstance(obj, (list, tuple, set)):
             if MetaDict._contains_mapping(obj):
-                value = type(obj)(self._from_object(x) for x in obj)
+                # Recursively process each item in the iterable
+                processed_items = (self._from_object(x) for x in obj)
+
+                # namedtuple and other tuple subclasses need their arguments unpacked,
+                # whereas list and set constructors take a single iterable.
+                if isinstance(obj, tuple):
+                    value = type(obj)(*processed_items)
+                else:
+                    value = type(obj)(processed_items)
             else:
                 value = obj
         elif isinstance(obj, MetaDict):
